@@ -1,5 +1,4 @@
 # -*-encoding=utf-8-*-
-# -*-encoding=utf-8-*-
 from enum import IntEnum
 
 
@@ -77,6 +76,8 @@ class Lexer:
             self.col = 1
         else:
             self.col += 1
+
+        return ch
 
     def consume_indent(self, line, col):
         """
@@ -256,6 +257,44 @@ class Lexer:
                 if self.code[self.pos - 1: self.pos + 1] == "!=":
                     self.consume()
                     self.emit(TokenType.BANG_EQ, start_line, start_col)
+                else:
+                    self.reporter.error(
+                        "E01001",
+                        (ch),
+                        start_line,
+                        start_col
+                    )
+            elif ch == "&":
+                self.consume()
+                if self.code[self.pos - 1: self.pos + 1] == "&&":
+                    self.consume()
+                    self.emit(TokenType.AMP_AMP, start_line, start_col)
+                else:
+                    self.reporter.error(
+                        "E01001",
+                        (ch),
+                        start_line,
+                        start_col
+                    )
+
+            elif ch == "|":
+                self.consume()
+                if self.code[self.pos - 1: self.pos + 1] == "||":
+                    self.consume()
+                    self.emit(TokenType.PIPE_PIPE, start_line, start_col)
+                else:
+                    self.reporter.error(
+                        "E01001",
+                        (ch),
+                        start_line,
+                        start_col
+                    )
+
+            elif ch == "~":
+                self.consume()
+                if self.code[self.pos - 1: self.pos + 1] == "~~":
+                    self.consume()
+                    self.emit(TokenType.TILDE_TILDE, start_line, start_col)
                 else:
                     self.reporter.error(
                         "E01001",

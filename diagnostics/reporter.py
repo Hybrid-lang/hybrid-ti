@@ -5,7 +5,6 @@ from .diagnostic import Diagnostic
 from .span import Span
 from .codes import *
 
-
 class Reporter:
     def __init__(self, file_, source):
         self.file = file_
