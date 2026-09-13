@@ -1,33 +1,5 @@
 # -*-encoding=utf-8-*-
-from enum import IntEnum
-
-
-# 类型用 IntEnum（底层是整数）
-class TokenType(IntEnum):
-    NULL = 0
-    NUM = 1
-    PLUS = 2
-    MINUS = 3
-    STAR = 4
-    SLASH = 5
-    PERCENT = 6
-    SLASH_SLASH = 7
-    STAR_STAR = 8
-    EQ_EQ = 9
-    GT_EQ = 10
-    LT_EQ = 11
-    GT = 12
-    LT = 13
-    BANG_EQ = 14
-    AMP_AMP = 15
-    PIPE_PIPE = 16
-    TILDE_TILDE = 17
-    NEWLINE = 18
-    INDENT = 19
-    DEDENT = 20
-    LPAREN = 21
-    RPAREN = 22
-
+from .kinds import TokenType
 
 # 容器用带 __slots__ 的类（兼顾可读性与内存）
 class Token:
@@ -168,14 +140,14 @@ class Lexer:
             elif ch == '(':
                 self.consume()
                 self.paren_depth += 1
-                self.emit(TokenType.LPAREN, ch, start_line, start_col)
+                self.emit(TokenType.LPAREN, start_line, start_col)
 
             elif ch == ')':
                 self.consume()
                 self.paren_depth -= 1
                 if self.paren_depth < 0:
                     self.paren_depth = 0
-                self.emit(TokenType.RPAREN, ch, start_line, start_col)
+                self.emit(TokenType.RPAREN, start_line, start_col)
 
             elif ch.isdigit():
                 self.consume()

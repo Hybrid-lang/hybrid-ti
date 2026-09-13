@@ -6,7 +6,7 @@ parser = argparse.ArgumentParser(description='hybrid-ti')
 parser.add_argument('path', type=str, help='file path')
 args = parser.parse_args()
 
-from frontend import clean_notation, Lexer
+from frontend import clean_notation, Lexer, Parser
 from diagnostics import Reporter
 
 code = ""
@@ -23,3 +23,10 @@ lexer.tokenize()
 print(cleaned)
 print(lexer.tokens)
 reporter.emit_all()
+
+parser = Parser(lexer.tokens, reporter)
+parser.parse_expr()
+
+from pprint import *
+
+pprint(parser.ast)
