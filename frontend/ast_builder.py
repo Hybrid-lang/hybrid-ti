@@ -168,16 +168,75 @@ class Parser:
         elif token.type == TokenType.LPAREN:
             self.consume()
             node = self.parse_expr_line(0)
+            if self.peek() is None or self.peek().type != TokenType.RPAREN:
+                self.reporter.error(
+                    "E02003",
+                    (),
+                    token.line,
+                    token.col
+                )
             self.consume()
             return node
+
+    def check(self, now):
+        t = type(now)
+        if t is type(None):
+            print(67)
+            return False
+
+        if t is Root:
+            for i in now.body:
+                if self.check(i) is False:
+                    self.reporter.error(
+                        "E00001",
+                        (),
+                        now.line,
+                        now.col
+                    )
+
+        if t is UnaryExpr:
+            if self.check(now.right) is False:
+                self.reporter.error(
+                    "E02005",
+                    (),
+                    now.line,
+                    now.col
+                )
+
+        if t is BinExpr:
+            if self.check(now.left) is False:
+                self.reporter.error(
+                    "E02006",
+                    (),
+                    now.line,
+                    now.col
+                )
+            if self.check(now.right) is False:
+                self.reporter.error(
+                    "E02007",
+                    (),
+                    now.line,
+                    now.col
+                )
 
     def parse_expr(self):
         while True:
             node = self.parse_expr_line()
-            if self.peek() is None:
+            token = self.peek()
+            if token is None:
                 break
-            elif self.peek().type == TokenType.NEWLINE:
+            elif token.type == TokenType.NEWLINE:
                 self.consume()
+            elif token.type == TokenType.RPAREN:
+                self.consume()
+                self.reporter.error(
+                    "E02004",
+                    (),
+                    token.line,
+                    token.col
+                )
 
             if node is not None:
                 self.ast.body.append(node)
+
+        self.check(self.ast)

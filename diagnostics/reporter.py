@@ -1,9 +1,11 @@
+# -*-encoding=utf-8-*-
 # diagnostics/reporter.py
 import sys
 from typing import List
 from .diagnostic import Diagnostic
 from .span import Span
 from .codes import *
+
 
 class Reporter:
     def __init__(self, file_, source):
@@ -17,12 +19,26 @@ class Reporter:
 
     def code_class(self, code):
         match code:
+            case "E00001":
+                return E00001
+
             case "E01001":
                 return E01001
+
             case "E02001":
                 return E02001
             case "E02002":
                 return E02002
+            case "E02003":
+                return E02003
+            case "E02004":
+                return E02004
+            case "E02005":
+                return E02005
+            case "E02006":
+                return E02006
+            case "E02007":
+                return E02007
 
     # ---------- 便捷方法：快速添加上下文错误 ----------
     def error(self, code, msg, line, col):

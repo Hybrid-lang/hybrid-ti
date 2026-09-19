@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from .span import Span
 from .codes import ErrorCode
 
-@dataclass
+@dataclass(slots = True)
 class Diagnostic:
     """一条完整的诊断报告"""
     code: ErrorCode          # 使用上面定义的 E001 等

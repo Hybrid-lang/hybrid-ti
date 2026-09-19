@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(slots=True)
 class Span:
     """代码片段的位置跨度（不可变）"""
     file: str  # 文件名或 "<input>"
