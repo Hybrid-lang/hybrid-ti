@@ -1,4 +1,5 @@
 # -*-encoding=utf-8-*-
+import string
 from .kinds import TokenType
 
 # 容器用带 __slots__ 的类（兼顾可读性与内存）
@@ -19,6 +20,8 @@ class Token:
 
 
 class Lexer:
+    __slots__ = ("code", "__len", "pos", "line", "col", "tokens", "indent_stack", "paren_depth", "reporter")
+
     def __init__(self, code, reporter):
         self.code = code
         self.__len = len(code)
@@ -111,29 +114,29 @@ class Lexer:
             ch = self.peek()
 
             if ch == "\n" or ch == " " or ch == "\t":
-                if ch == "\n":
-                    self.consume()
-                    self.emit(TokenType.NEWLINE, start_line, start_col)
+                if (self.pos == 0 or ch == "\n") and self.paren_depth == 0:
 
-                    start_line += 1
-                    start_col = 1
+                #if self.pos == 0 or ch == "\n":
+                    #if self.paren_depth == 0:
+                    if ch == "\n":
+                        self.consume()
+                        self.emit(TokenType.NEWLINE, start_line, start_col)
 
-                if self.pos == 0 or ch == "\n":
-                    if self.paren_depth == 0:
-                        level = self.consume_indent(start_line, start_col)
-                        now = self.indent_stack[-1]
-                        if level > now:
-                            for i in range(level - now):
-                                self.emit(TokenType.INDENT, start_line, start_col)
-                            self.indent_stack.append(level)
-                        elif level < now:
-                            for i in range(now - level):
-                                self.emit(TokenType.DEDENT, start_line, start_col)
-                            self.indent_stack.pop()
-                        else:
-                            pass
+                        start_line += 1
+                        start_col = 1
+
+                    level = self.consume_indent(start_line, start_col)
+                    now = self.indent_stack[-1]
+                    if level > now:
+                        for i in range(level - now):
+                            self.emit(TokenType.INDENT, start_line, start_col)
+                        self.indent_stack.append(level)
+                    elif level < now:
+                        for i in range(now - level):
+                            self.emit(TokenType.DEDENT, start_line, start_col)
+                        self.indent_stack.pop()
                     else:
-                        continue
+                        pass
                 else:
                     self.consume()
 
@@ -162,6 +165,7 @@ class Lexer:
                     elif ch == "." and not if_dot:
                         self.consume()
                         n += ch
+                        if_dot = True
                     else:
                         break
 
@@ -201,12 +205,7 @@ class Lexer:
                     self.consume()
                     self.emit(TokenType.EQ_EQ, start_line, start_col)
                 else:
-                    self.reporter.error(
-                        "E01001",
-                        (ch),
-                        start_line,
-                        start_col
-                    )
+                    self.emit(TokenType.EQ, start_line, start_col)
 
             elif ch == ">":
                 self.consume()
@@ -277,12 +276,32 @@ class Lexer:
 
             else:
                 self.consume()
-                self.reporter.error(
-                    "E01001",
-                    (ch),
-                    start_line,
-                    start_col
-                )
+                if len(self.tokens) != 0 and self.tokens[-1].type == TokenType.NUM:
+                    self.reporter.error(
+                        "E01002",
+                        (),
+                        start_line,
+                        start_col
+                    )
+                elif ch != "_" and ch in string.punctuation:
+                    self.reporter.error(
+                        "E01001",
+                        (ch),
+                        start_line,
+                        start_col
+                    )
+                else:
+                    i = 50
+                    s = ch
+                    while i:
+                        ch = self.peek()
+                        if ch is None or ch == "\n" or ch == " " or ch != "_" and ch in string.punctuation:
+                            break
+                        else:
+                            self.consume()
+                            s += ch
+                        i -=1
+                    self.emit(TokenType.IDENT, start_line, start_col, s)
 
         for i in range(self.indent_stack[-1]):
             self.emit(TokenType.DEDENT, self.line + 1, 1)

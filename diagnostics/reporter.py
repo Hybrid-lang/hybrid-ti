@@ -8,6 +8,8 @@ from .codes import *
 
 
 class Reporter:
+    __slots__ = ("file", "source", "diagnostics")
+
     def __init__(self, file_, source):
         self.file = file_
         self.source = source
@@ -24,6 +26,8 @@ class Reporter:
 
             case "E01001":
                 return E01001
+            case "E01002":
+                return E01002
 
             case "E02001":
                 return E02001
@@ -39,6 +43,8 @@ class Reporter:
                 return E02006
             case "E02007":
                 return E02007
+            case "E02008":
+                return E02008
 
     # ---------- 便捷方法：快速添加上下文错误 ----------
     def error(self, code, msg, line, col):

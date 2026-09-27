@@ -38,7 +38,14 @@ class BinExpr(AstNode):
     right: AstNode
 
 
+@dataclass(slots=True)
+class VarExpr(AstNode):
+    name: str
+
+
 class Parser:
+    __slots__ = ("pos", "tokens", "__len", "prec", "line", "col", "ast", "reporter")
+
     def __init__(self, tokens, reporter):
         self.pos = 0
         self.tokens = tokens
@@ -90,7 +97,7 @@ class Parser:
 
         return token
 
-    def parse_expr_line(self, min_prec=0):
+    def pratt_expr(self, min_prec=0):
         if self.peek() is None:
             return
 
@@ -104,7 +111,7 @@ class Parser:
                     op = "~~"
             self.consume()
             start_line, start_col = self.line, self.col
-            right = self.parse_expr_line(40)
+            right = self.pratt_expr(40)
             left = UnaryExpr(start_line, start_col, op, right)
         else:
             left = self.parse_primary()
@@ -122,7 +129,7 @@ class Parser:
             start_line, start_col = self.line, self.col
             prec = self.prec[token.type]
             next_prec = prec + 1 if token.type != TokenType.STAR_STAR else prec
-            right = self.parse_expr_line(next_prec)
+            right = self.pratt_expr(next_prec)
 
             match token.type:
                 case TokenType.PLUS:
@@ -164,10 +171,13 @@ class Parser:
 
         if token.type == TokenType.NUM:
             self.consume()
-            return IntLit(self.line, self.col, token.value)
+            if "." in token.value:
+                return FltLit(self.line, self.col, token.value)
+            else:
+                return IntLit(self.line, self.col, token.value)
         elif token.type == TokenType.LPAREN:
             self.consume()
-            node = self.parse_expr_line(0)
+            node = self.pratt_expr(0)
             if self.peek() is None or self.peek().type != TokenType.RPAREN:
                 self.reporter.error(
                     "E02003",
@@ -177,11 +187,29 @@ class Parser:
                 )
             self.consume()
             return node
+        elif token.type == TokenType.IDENT:
+            self.consume()
+            return VarExpr(self.line, self.col, token.value)
+
+    def parse_expr(self):
+        node = self.pratt_expr()
+        token = self.peek()
+
+        if token is not None:
+            if token.type == TokenType.RPAREN:
+                self.consume()
+                self.reporter.error(
+                    "E02004",
+                    (),
+                    token.line,
+                    token.col
+                )
+
+        return node
 
     def check(self, now):
         t = type(now)
         if t is type(None):
-            print(67)
             return False
 
         if t is Root:
@@ -219,24 +247,25 @@ class Parser:
                     now.col
                 )
 
-    def parse_expr(self):
+    def build_ast(self):
+        types = ("int", "flt")
         while True:
-            node = self.parse_expr_line()
             token = self.peek()
             if token is None:
                 break
+
+            node = None
+
+            if token.type == TokenType.IDENT and token.value in types:
+                if self.pos + 1 < self.__len:
+                    nxt = self.tokens[self.pos + 1]
+                    if nxt.type == TokenType.IDENT and nxt.value not in types:
+                        pass
             elif token.type == TokenType.NEWLINE:
                 self.consume()
-            elif token.type == TokenType.RPAREN:
-                self.consume()
-                self.reporter.error(
-                    "E02004",
-                    (),
-                    token.line,
-                    token.col
-                )
+            else:
+                node = self.parse_expr()
 
-            if node is not None:
-                self.ast.body.append(node)
+            self.ast.body.append(node) if node is not None else None
 
         self.check(self.ast)

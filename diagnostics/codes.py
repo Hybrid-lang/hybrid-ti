@@ -17,6 +17,7 @@ class WarningCode(Code):
 E00001 = ErrorCode("E00001-unexpected", "unexpected null value in the root node of AST\nif you see this message, please report it to the developers")
 
 E01001 = ErrorCode("E01001", "unknown character \"{}\"")
+E01002 = ErrorCode("E01002", "extra decimal point in the number")
 
 E02001 = ErrorCode("E02001", "spaces and tabs cannot be mixed in indentation")
 E02002 = ErrorCode("E02002", "{} {} {} used for indentation, while is not a multiple of 4")
@@ -25,3 +26,4 @@ E02004 = ErrorCode("E02004", "extra \")\"")
 E02005 = ErrorCode("E02005", "unary operator missing right operand")
 E02006 = ErrorCode("E02006", "binary operator missing left operand")
 E02007 = ErrorCode("E02007", "binary operator missing right operand")
+E02008 = ErrorCode("E02008", "extra indentation")

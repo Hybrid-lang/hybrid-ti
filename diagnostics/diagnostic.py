@@ -30,5 +30,8 @@ class Diagnostic:
             level = "warning"
         base = f"{level}[{self.code.code}]: {self.code.description.format(*self.msg)}\n"
         base += f"--> {Span(self.file, self.line, self.col)}\n"
-        base += f"{self.line} | {self.read_contest()}"
+        base += f"{self.line} | {self.read_contest()}\n"
+        for i in range(len(str(self.line)) + 2 + self.col):
+            base += " "
+        base += "^"
         return base

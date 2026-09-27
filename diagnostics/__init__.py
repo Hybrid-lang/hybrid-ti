@@ -1,3 +1,4 @@
+# -*-encoding=utf-8-*-
 """
 diagnostics/
 ├── __init__.py
