@@ -10,6 +10,8 @@ from frontend import clean_notation, Lexer, Parser
 from diagnostics import Reporter
 from interpreter import Runner
 
+from pprint import *
+
 code = ""
 f = open(args.path, "r", encoding = "utf-8")
 code = f.read()
@@ -35,7 +37,6 @@ reporter.emit_all()
 parser = Parser(tokens, reporter)
 parser.build_ast()
 
-from pprint import *
 # 输出AST
 ast = parser.ast
 pprint(ast)

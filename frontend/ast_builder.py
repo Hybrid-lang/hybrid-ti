@@ -3,33 +3,27 @@ from dataclasses import dataclass
 from copy import deepcopy
 from .kinds import TokenType
 
-
 @dataclass(slots=True)
 class AstNode:
     line: int
     col: int
 
-
 @dataclass(slots=True)
 class Root(AstNode):
     body: list[AstNode]
-
 
 @dataclass(slots=True)
 class IntLit(AstNode):
     value: str
 
-
 @dataclass(slots=True)
 class FltLit(AstNode):
     value: str
-
 
 @dataclass(slots=True)
 class UnaryExpr(AstNode):
     op: str
     right: AstNode
-
 
 @dataclass(slots=True)
 class BinExpr(AstNode):
@@ -37,11 +31,15 @@ class BinExpr(AstNode):
     left: AstNode
     right: AstNode
 
-
 @dataclass(slots=True)
 class VarExpr(AstNode):
     name: str
 
+@dataclass(slots=True)
+class Variable(AstNode):
+    kind: str
+    name: str
+    value: AstNode | None
 
 class Parser:
     __slots__ = ("pos", "tokens", "__len", "prec", "line", "col", "ast", "reporter")
@@ -257,12 +255,24 @@ class Parser:
             node = None
 
             if token.type == TokenType.IDENT and token.value in types:
+                start_line, start_col = self.line, self.col
+                kind = token.value
+                self.consume()
                 if self.pos + 1 < self.__len:
-                    nxt = self.tokens[self.pos + 1]
+                    nxt = self.peek()
                     if nxt.type == TokenType.IDENT and nxt.value not in types:
-                        pass
+                        name = nxt.value
+                        self.consume()
+                        nnxt = self.peek()
+                        v = None
+                        if nnxt.type == TokenType.EQ:
+                            self.consume()
+                            v = self.parse_expr()
+                        node = Variable(start_line, start_col, kind, name, v)
+
             elif token.type == TokenType.NEWLINE:
                 self.consume()
+
             else:
                 node = self.parse_expr()
 
