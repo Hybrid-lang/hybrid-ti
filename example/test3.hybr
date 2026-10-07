@@ -2,3 +2,4 @@ int a = 666
 flt b = 0.666
 int c = a + b
 flt d = a + b
+flt

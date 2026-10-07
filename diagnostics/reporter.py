@@ -2,6 +2,8 @@
 # diagnostics/reporter.py
 import sys
 from typing import List
+from unittest import case
+
 from .diagnostic import Diagnostic
 from .span import Span
 from .codes import *
@@ -45,7 +47,10 @@ class Reporter:
                 return E02007
             case "E02008":
                 return E02008
-
+            case "E02009":
+                return E02009
+            case "E02010":
+                return E02010
     # ---------- 便捷方法：快速添加上下文错误 ----------
     def error(self, code, msg, line, col):
         self.__add(Diagnostic(self.code_class(code), msg, self.file, line, col, self.source))

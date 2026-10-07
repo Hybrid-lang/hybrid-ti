@@ -254,21 +254,40 @@ class Parser:
 
             node = None
 
+            # 变量
             if token.type == TokenType.IDENT and token.value in types:
-                start_line, start_col = self.line, self.col
                 kind = token.value
                 self.consume()
-                if self.pos + 1 < self.__len:
-                    nxt = self.peek()
-                    if nxt.type == TokenType.IDENT and nxt.value not in types:
-                        name = nxt.value
-                        self.consume()
-                        nnxt = self.peek()
-                        v = None
-                        if nnxt.type == TokenType.EQ:
-                            self.consume()
-                            v = self.parse_expr()
-                        node = Variable(start_line, start_col, kind, name, v)
+                start_line, start_col = self.line, self.col
+                # if self.pos + 1 < self.__len:
+
+                nxt = self.peek()
+                # 是否有变量名
+                if nxt is not None:
+                    self.consume()
+                    if nxt.type == TokenType.IDENT:
+                        if nxt.value not in types:
+                            name = nxt.value
+                            nnxt = self.peek()
+                            v = None
+                            if nnxt.type == TokenType.EQ:
+                                self.consume()
+                                v = self.parse_expr()
+                            node = Variable(start_line, start_col, kind, name, v)
+                    else:
+                        self.reporter.error(
+                            "E02010",
+                            (),
+                            self.line,
+                            self.col
+                        )
+                else:
+                    self.reporter.error(
+                        "E02009",
+                        (),
+                        self.line,
+                        self.col
+                    )
 
             elif token.type == TokenType.NEWLINE:
                 self.consume()

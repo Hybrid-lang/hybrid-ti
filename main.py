@@ -13,7 +13,8 @@ from interpreter import Runner
 from pprint import *
 
 code = ""
-f = open(args.path, "r", encoding = "utf-8")
+# 先图方便,这样一下
+f = open(f"example/test{args.path}.hybr", "r", encoding = "utf-8")
 code = f.read()
 f.close()
 
